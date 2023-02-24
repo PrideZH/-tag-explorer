@@ -1,5 +1,6 @@
 package cn.pridezh.tagexplore.core.controller;
 
+import cn.pridezh.tagexplore.core.domain.common.PageDTO;
 import cn.pridezh.tagexplore.core.domain.common.Result;
 import cn.pridezh.tagexplore.core.config.properties.AppProperties;
 import cn.pridezh.tagexplore.core.domain.dto.ResourceUpdateDTO;
@@ -42,10 +43,10 @@ public class ResourceController {
     }
 
     @GetMapping("")
-    public Result<IPage<ResourceItemVO>> list(@RequestParam(required = false) List<String> tags) {
+    public Result<IPage<ResourceItemVO>> list(@RequestParam(required = false) List<String> tags, PageDTO pageDTO) {
         return Result.success(resourceService.page(Optional.ofNullable(tags)
                 .map(data -> data.stream().map(Long::valueOf).toList())
-                .orElse(null)));
+                .orElse(null), pageDTO));
     }
 
     @GetMapping("/{id:\\d+}")

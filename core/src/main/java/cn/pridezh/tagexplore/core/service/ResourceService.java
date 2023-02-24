@@ -1,5 +1,6 @@
 package cn.pridezh.tagexplore.core.service;
 
+import cn.pridezh.tagexplore.core.domain.common.PageDTO;
 import cn.pridezh.tagexplore.core.domain.dto.ResourceUpdateDTO;
 import cn.pridezh.tagexplore.core.domain.po.Cover;
 import cn.pridezh.tagexplore.core.domain.po.Resource;
@@ -115,10 +116,10 @@ public class ResourceService extends ServiceImpl<ResourceMapper, Resource> {
         };
     }
 
-    public IPage<ResourceItemVO> page(List<Long> tags) {
+    public IPage<ResourceItemVO> page(List<Long> tags, PageDTO pageDTO) {
         String password = appProperties.getAuth().getPassword();
 
-        IPage<Resource> search = resourceMapper.search(new Page<>(0, 10), tags);
+        IPage<Resource> search = resourceMapper.search(new Page<>(pageDTO.getPage(), pageDTO.getSize()), tags);
 
         return search.convert(resource -> {
                     ResourceItemVO resourceVO = new ResourceItemVO();

@@ -18,8 +18,8 @@ export interface Resource extends BaseResp {
 
 const resourceApi = {
 
-    list (tags?: string[]) {
-        return axios.get<Page<ResourceItem>>('/resource', { params: { tags: tags }} );
+    list (tags?: string[], page?: number) {
+        return axios.get<Page<ResourceItem>>('/resource', { params: { tags, page, size: 15 }} );
     },
 
     get (id: string) {
