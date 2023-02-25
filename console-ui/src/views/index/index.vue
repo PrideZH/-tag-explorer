@@ -8,12 +8,35 @@ import Console from './console.vue'
 
 import resourceApi, { ResourceItem } from '../../api/resource'
 import { Page } from '../../types'
+import axios, { AxiosProgressEvent } from 'axios'
 
 const resources = ref<Page<ResourceItem>>()
 
 const active = ref<ResourceItem>();
 const tags = ref<string[]>([]);
 const current = ref<number>(1);
+
+// 拖拽文件上传
+const dragActive = ref<boolean>(false);
+
+enum WorkStatus {
+  WAITING, SUCCESS
+}
+interface Work {
+  name: string;
+  progress: number;
+  status: WorkStatus;
+}
+const workQueue = ref<Work[]>([])
+
+const dropFilesHandle = (event: DragEvent) => {
+  dragActive.value = false;
+  if (event.dataTransfer == null) {
+    return console.error('数据丢失')
+  }
+  if (event.dataTransfer.files.length < 1) return
+  uploadFiles(Array.from(event.dataTransfer.files))
+}
 
 onMounted(() => {
   requestResource();
@@ -46,6 +69,31 @@ function changePage (page: number) {
   current.value = page;
   requestResource();
 }
+
+function uploadFiles (files: File[]) {
+  const formdata = new FormData();
+  files.forEach((file: File) => {
+      workQueue.value.push({
+          name: file.name,
+          status: WorkStatus.WAITING,
+          progress: 0
+      })
+      formdata.append('files', file);
+  })
+  axios.post<ResourceItem[]>('/resource', formdata, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    onUploadProgress: function (event: AxiosProgressEvent) {
+      workQueue.value.forEach(work => {
+          work.progress = event.progress || 0;
+      })
+    }
+  }).then(res => {
+      workQueue.value.splice(0, workQueue.value.length);
+      if (resources.value == undefined) return;
+      res.data.forEach(item => resources.value?.records.unshift(item));
+      resources.value.total += res.data.length;
+  })
+}
 </script>
 
 <template>
@@ -55,17 +103,23 @@ function changePage (page: number) {
       requestResource();
     }"></Tags>
     <div class="main">
-      <Header class="header" @insert="(data: ResourceItem[]) => {
-        if (resources == undefined) return;
-        data.forEach(item => resources?.records.unshift(item));
-        resources.total++;
-      }"></Header>
+      <Header class="header" @upload="uploadFiles"></Header>
       <div class="resources-scroll">
-        <div class="resources">
+        <div :class="['resources', { 'drag-active': dragActive }]"
+            @dragenter.stop.prevent="dragActive = true"
+            @dragover.stop.prevent="dragActive = true"
+            @dragleave.stop.prevent="dragActive = false"
+            @drop.stop.prevent="dropFilesHandle">
           <Resource :class="[ 'resource', { 'resource-active': resource == active } ]"
             v-for="resource in resources?.records" :key="resource.id" :resource="resource"
             @click="() => active = resource">
           </Resource>
+        </div>
+      </div>
+      <div class="work-list" v-show="workQueue.length != 0">
+        <div v-for="work in workQueue" class="work-item">
+            {{ work.name }}
+            <div class="progress" :style="{width: (work.progress * 100) + '%'}"></div>
         </div>
       </div>
       <div class="pagination" v-show="resources?.pages || 1 > 1">
@@ -131,6 +185,10 @@ function changePage (page: number) {
   padding: 32px;
 }
 
+.drag-active {
+  border: 1px dashed #eb4a76;
+}
+
 .resource {
   border: 4px solid #f5f5f5;
   border-radius: 8px;
@@ -180,5 +238,20 @@ function changePage (page: number) {
   color: #dbdef0;
   background-color: transparent;
   cursor: default;
+}
+
+.work-list {
+  position: relative;
+}
+
+.work-item {
+  position: relative;
+}
+
+.work-item .progress {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background-color: #2da44e66;
 }
 </style>
