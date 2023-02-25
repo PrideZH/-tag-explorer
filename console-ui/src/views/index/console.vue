@@ -50,9 +50,8 @@ const deleteHandle = () => {
             console.error('Resource is loss');
             return;
         }
-        resourceApi.delete(props.id).then(res => {
-            emits('delete');
-        })
+        emits('delete', props.id);
+        resourceApi.delete(props.id);
     }
 }
 
