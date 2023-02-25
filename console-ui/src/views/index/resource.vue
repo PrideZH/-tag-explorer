@@ -27,6 +27,8 @@ const gotoHandle = (resource: ResourceItem) => {
 }
 
 const mousemoveHandle = (e: MouseEvent) => {
+  if (props.resource.coverCount == 0 && props.resource.cover) return;
+
   if (e.target == null) return;
   const item = (e.target as HTMLElement);
   const itemRect: DOMRect = item.getBoundingClientRect()
