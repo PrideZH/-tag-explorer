@@ -192,11 +192,10 @@ public class ResourceService extends ServiceImpl<ResourceMapper, Resource> {
         Resource newResource = new Resource();
 
         if (StringUtils.isNotBlank(resourceUpdateDTO.getName())) {
-            File file = new File(appProperties.getRepository() + "/" + resource.getName());
-            File newFile = createDistinctFile(resource.getName());
-
+            File newFile = createDistinctFile(resourceUpdateDTO.getName());
             newResource.setName(newFile.getName());
 
+            File file = new File(appProperties.getRepository() + "/" + resource.getName());
             if(!file.renameTo(newFile)) {
                 throw new ServiceException(1001, "文件名称修改失败");
             }
