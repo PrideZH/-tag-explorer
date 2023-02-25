@@ -11,8 +11,25 @@ import { Page } from '../../types'
 import axios, { AxiosProgressEvent } from 'axios'
 
 const resources = ref<Page<ResourceItem>>()
+const deleteResourceHandle = (id: string) => {
+  if (resources.value == undefined) return;
+  let index = 0;
+  for (; index < resources.value.records.length; index++) {
+    if (resources.value.records[index].id == id) break;
+  }
+  if (index == resources.value.records.length) return;
+  resources.value.records.splice(index, 1);
+  resources.value.total--;
 
-const active = ref<ResourceItem>();
+  // 控制台显示的资源被删除时 显示下一个资源
+  if (active.value?.id == id) {
+    active.value = resources.value.records[Math.min(index, resources.value.records.length - 1)];
+  }
+}
+
+// 控制台显示资源
+const active = ref<ResourceItem>()
+
 const tags = ref<string[]>([]);
 const current = ref<number>(1);
 
@@ -143,11 +160,8 @@ function uploadFiles (files: File[]) {
         </span>
       </div>
     </div>
-    <Console class="console" :id="active?.id" @delete="() => {
-      if (resources == undefined || active == undefined) return;
-      resources.records.splice(resources.records.indexOf(active), 1);
-      resources.total--;
-    }" @update="(name: string) => {
+    <Console class="console" :id="active?.id" @delete="deleteResourceHandle"
+    @update="(name: string) => {
       if (active == undefined) return;
       active.name = name;
     }"></Console>
