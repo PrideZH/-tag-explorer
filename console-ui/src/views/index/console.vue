@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import axios from 'axios';
 import { ref, watch, nextTick } from 'vue';
 
 import resourceApi, { Resource } from '../../api/resource';
@@ -13,10 +14,12 @@ const props = defineProps<Props>();
 
 const resource = ref<Resource>();
 
-const emits = defineEmits([ 'delete', 'update' ])
+const emits = defineEmits([ 'delete', 'update', 'delCover', 'insertCover' ])
 
 const tagInputRef = ref();
 const isInputTag = ref<boolean>(false);
+
+const fileRef = ref();
 
 watch(() => props.id, (newId, _) => {
     if (newId == undefined) {
@@ -88,9 +91,42 @@ const delTagHandle = (tagId: string) => {
     })
 }
 
+const uploadHandle = (event: Event) => {
+    if (event.target === null) return;
+    const input: HTMLInputElement = <HTMLInputElement>event.target;
+    if (input.files === null) return;
+    insertCover(input.files[0])
+}
+
+const delCoverHandle = () => {
+    if (confirm('Do you really want to delete the cover?')) {
+        if (props.id == undefined || resource.value == undefined) {
+            console.error('Resource is loss');
+            return;
+        }
+        resource.value.cover = false;
+        emits('delCover', props.id);
+        resourceApi.delCover(props.id)
+    }
+}
+
 function requestResource (id: string) {
     resourceApi.get(id).then(res => {
         resource.value = res.data;
+    })
+}
+
+function insertCover (file: File) {
+    if (props.id == null) return;
+    const formdata = new FormData();
+    formdata.append('file', file);
+    formdata.append('id', props.id);
+    axios.post('/resource/cover', formdata, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }).then(res => {
+        if (resource.value == undefined) return;
+        resource.value.cover = true;
+        emits('insertCover', props.id)
     })
 }
 </script>
@@ -109,6 +145,22 @@ function requestResource (id: string) {
         </span>
         <button class="add-tag" v-show="!isInputTag" @click="() => { isInputTag = true; nextTick(() => tagInputRef.focus()) }">+ New Tag</button>
         <input class="add-tag" ref="tagInputRef" v-show="isInputTag" type="text" @blur="addTagHandle">
+    </div>
+    <div>Cover</div>
+    <div class="covers">
+        <div class="item custom" @click="() => fileRef.click()">
+            <div v-if="resource?.cover" style="height: 100%">
+                <img class="cover" :src="`/resource/cover/${resource.id}`" :alt="resource?.name" loading="lazy">
+                <button class="close" @click.stop.prevent="delCoverHandle">x</button>
+            </div>
+            <div class="insert-item" v-else style="height: 100%">
+                <span class="text">自定义封面</span>
+            </div>
+        </div>
+        <input type="file" ref="fileRef" accept="image/*" @change="uploadHandle" style="display: none;"/>
+        <div class="item" v-for="index in resource?.coverCount">
+            <img class="cover" :src="`/cover/${resource?.id}?index=${index}`" :alt="resource?.name" loading="lazy">
+        </div>
     </div>
     <div>Info</div>
     <div class="info">
@@ -166,7 +218,7 @@ function requestResource (id: string) {
     cursor: pointer;
 }
 
-.tag .close {
+.tag .close, .covers .close {
     width: 16px;
     margin-left: 4px;
     color: #646464;
@@ -176,10 +228,50 @@ function requestResource (id: string) {
     cursor: pointer;
 }
 
-.tag .close:hover {
+.covers .close {
+    position: absolute;
+    right: 2px;
+    top: 2px;
+}
+
+.tag .close:hover, .covers .close:hover {
     color: #fff;
     background-color: #646464;
 }
+
+.covers {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.covers .item {
+    width: 141px;
+    height: 80px;
+}
+
+.covers .item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.covers .custom {
+    position: relative;
+    cursor: pointer;
+}
+
+.covers .custom .insert-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.covers .custom .insert-item .text {
+    color: #888;
+    font-size: 12px;
+}
+
 
 .info {
     font-size: 0.8rem;

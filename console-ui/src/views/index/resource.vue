@@ -7,7 +7,7 @@ import { ResourceItem } from '../../api/resource';
 interface Props {
   resource: ResourceItem;
 }
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const router = useRouter();
 
@@ -26,21 +26,34 @@ const gotoHandle = (resource: ResourceItem) => {
   }
 }
 
-const mousemoveHandle = (e: MouseEvent, resource: ResourceItem) => {
+const mousemoveHandle = (e: MouseEvent) => {
   if (e.target == null) return;
   const item = (e.target as HTMLElement);
   const itemRect: DOMRect = item.getBoundingClientRect()
   // 鼠标在封面上从左到右的偏移量 [0-1]
   const offset: number = Math.abs(e.clientX - itemRect.left) / itemRect.width;
 
-  item.setAttribute('src', `/cover/${resource.id}?index=${Math.floor(resource.coverCount * offset)}`);
+  item.setAttribute('src', `/cover/${props.resource.id}?index=${Math.floor(props.resource.coverCount * offset)}`);
+}
+
+const mouseleaveHandle = (e: MouseEvent) => {
+  if (e.target == null) return;
+  const item = (e.target as HTMLElement);
+
+  if (props.resource.cover) {
+    item.setAttribute('src', `/resource/cover/${props.resource.id}`);
+  } else {
+    item.setAttribute('src', `/cover/${props.resource.id}`);
+  }
 }
 </script>
 
 <template>
   <div class="resource-container" @dblclick="gotoHandle(resource)">
     <div class="cover-container">
-      <img class="cover" :src="`/cover/${resource.id}`" :alt="resource.name" loading="lazy" @mousemove="mousemoveHandle($event, resource)">
+      <img class="cover" :src="props.resource.cover ? `/resource/cover/${resource.id}` : `/cover/${resource.id}`"
+        :alt="resource.name" loading="lazy"
+        @mousemove="mousemoveHandle"  @mouseleave="mouseleaveHandle">
     </div>
     <div class="title">{{ resource.name }}</div>
   </div>

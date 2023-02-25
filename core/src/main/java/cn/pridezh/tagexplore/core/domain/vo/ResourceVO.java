@@ -19,4 +19,8 @@ public class ResourceVO extends BaseVO {
 
     private List<TagVO> tags;
 
+    private Long coverCount;
+
+    private Boolean cover;
+
 }

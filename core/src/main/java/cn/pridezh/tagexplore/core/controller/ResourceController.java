@@ -42,6 +42,12 @@ public class ResourceController {
         return Result.success(resourceService.post(files));
     }
 
+    @PostMapping("/cover")
+    public Result<Void> uploadCover(MultipartFile file, String id) throws IOException {
+        resourceService.uploadCover(file, Long.valueOf(id));
+        return Result.success(null);
+    }
+
     @GetMapping("")
     public Result<IPage<ResourceItemVO>> list(@RequestParam(required = false) List<String> tags, PageDTO pageDTO) {
         return Result.success(resourceService.page(Optional.ofNullable(tags)
@@ -54,7 +60,24 @@ public class ResourceController {
         return Result.success(resourceService.get(Long.valueOf(id)));
     }
 
-    @RequestMapping(value = "/images/{id:\\d+}",
+    @GetMapping(value = "/cover/{id:\\d+}",
+            produces = { MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_GIF_VALUE })
+    public byte[] getCover(@PathVariable("id") String id) {
+        Resource resource = resourceService.getById(Long.valueOf(id));
+        if (resource == null || resource.getCover() == null) {
+            return new byte[] {};
+        }
+
+        String password = appProperties.getAuth().getPassword();
+
+        if (StringUtils.isNotBlank(password)) {
+            return XORUtils.execute(resource.getCover(), password, false);
+        } else {
+            return resource.getCover();
+        }
+    }
+
+    @GetMapping(value = "/images/{id:\\d+}",
             produces = { MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_GIF_VALUE })
     public byte[] getImage(@PathVariable("id") String id) throws Exception {
         Resource resource = resourceService.getById(Long.valueOf(id));
@@ -154,6 +177,12 @@ public class ResourceController {
     @DeleteMapping("/{id:\\d+}")
     public Result<Void> delete(@PathVariable("id") String id) {
         resourceService.delete(Long.valueOf(id));
+        return Result.success(null);
+    }
+
+    @DeleteMapping("/{id:\\d+}/cover")
+    public Result<Void> delCover(@PathVariable("id") String id) {
+        resourceService.delCover(Long.valueOf(id));
         return Result.success(null);
     }
 

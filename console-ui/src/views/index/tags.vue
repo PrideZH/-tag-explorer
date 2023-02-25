@@ -24,7 +24,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div id="container">
+  <div id="tags-container">
     <span :class="[ 'tag', { 'tag-active': actives.includes(tag) } ]" v-for="tag in tags" :key="tag.id"
         @click="activeHandle(tag)">
         {{ tag.name }} [{{ tag.count }}]
@@ -33,20 +33,24 @@ onMounted(() => {
 </template>
 
 <style scoped>
+#tags-container {
+  overflow-y: auto;
+}
+
 .tag {
-    display: inline-block;
-    margin: 8px;
-    padding: 2px 4px;
-    border: none;
-    border-radius: 4px;
-    color: #646464;
-    background-color: #f3f3f3;
-    font-size: 0.8rem;
-    cursor: pointer;
+  display: inline-block;
+  margin: 8px;
+  padding: 2px 4px;
+  border: none;
+  border-radius: 4px;
+  color: #646464;
+  background-color: #f3f3f3;
+  font-size: 0.8rem;
+  cursor: pointer;
 }
 
 .tag-active {
-    color: #fff;
-    background-color: #eb4a76;
+  color: #fff;
+  background-color: #eb4a76;
 }
 </style>

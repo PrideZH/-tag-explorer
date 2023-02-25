@@ -4,16 +4,19 @@ import { BaseResp, Page } from '../types';
 export interface ResourceItem extends BaseResp {
     name: string;
     type: string;
+    cover: boolean;
     coverCount: number;
 }
 
 export interface Resource extends BaseResp {
     name: string;
     type: string;
+    cover: boolean;
     tags: {
         id: string;
         name: string;
     }[];
+    coverCount: number;
 }
 
 const resourceApi = {
@@ -25,7 +28,7 @@ const resourceApi = {
     get (id: string) {
         return axios.get<Resource>(`/resource/${id}`);
     },
-
+    
     put (id: string, data: {
         name?: string;
         tags?: string[];
@@ -35,6 +38,10 @@ const resourceApi = {
 
     delete (id: string) {
         return axios.delete(`/resource/${id}`)
+    },
+
+    delCover (id: string) {
+        return axios.delete(`/resource/cover/${id}`)
     }
 
 }

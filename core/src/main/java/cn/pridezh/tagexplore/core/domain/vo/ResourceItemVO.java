@@ -20,4 +20,6 @@ public class ResourceItemVO extends BaseVO {
      */
     private Long coverCount;
 
+    private Boolean cover;
+
 }

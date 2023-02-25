@@ -36,6 +36,26 @@ const updateResourceHandle = (id: string, name: string) => {
   resources.value.records[index].name = name;
 }
 
+const delCoverHandle = (id: string) => {
+  if (resources.value == undefined) return;
+  let index = 0;
+  for (; index < resources.value.records.length; index++) {
+    if (resources.value.records[index].id == id) break;
+  }
+  if (index == resources.value.records.length) return;
+  resources.value.records[index].cover = false;
+}
+
+const insertCoverHandle = (id: string) => {
+  if (resources.value == undefined) return;
+  let index = 0;
+  for (; index < resources.value.records.length; index++) {
+    if (resources.value.records[index].id == id) break;
+  }
+  if (index == resources.value.records.length) return;
+  resources.value.records[index].cover = true;
+}
+
 // 控制台显示资源
 const active = ref<ResourceItem>()
 
@@ -169,7 +189,7 @@ function uploadFiles (files: File[]) {
         </span>
       </div>
     </div>
-    <Console class="console" :id="active?.id" @delete="deleteResourceHandle" @update="updateResourceHandle"></Console>
+    <Console class="console" :id="active?.id" @delete="deleteResourceHandle" @update="updateResourceHandle" @delCover="delCoverHandle" @insertCover="insertCoverHandle"></Console>
   </div>
 </template>
 

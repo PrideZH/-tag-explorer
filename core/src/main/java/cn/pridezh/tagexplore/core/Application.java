@@ -1,7 +1,10 @@
 package cn.pridezh.tagexplore.core;
 
+import cn.pridezh.tagexplore.core.domain.po.Resource;
+import cn.pridezh.tagexplore.core.mapper.ResourceMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacv.FFmpegLogCallback;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;

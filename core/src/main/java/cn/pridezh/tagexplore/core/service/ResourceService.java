@@ -18,6 +18,7 @@ import cn.pridezh.tagexplore.core.config.properties.AppProperties;
 import cn.pridezh.tagexplore.core.exception.ServiceException;
 import cn.pridezh.tagexplore.core.mapper.CoverMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -105,6 +106,21 @@ public class ResourceService extends ServiceImpl<ResourceMapper, Resource> {
         return resourceVO;
     }
 
+    public void uploadCover(MultipartFile file, Long id) throws IOException {
+        Resource resource = Optional
+                .ofNullable(resourceMapper.selectById(id))
+                .orElseThrow(() -> new ServiceException(HttpStatus.NOT_FOUND));
+
+        String password = appProperties.getAuth().getPassword();
+
+        if (StringUtils.isNotBlank(password)) {
+            resource.setCover(XORUtils.execute(file.getBytes(), password, false));
+        } else {
+            resource.setCover(file.getBytes());
+        }
+        resourceMapper.updateById(resource);
+    }
+
     private String getExtension(String type) {
         return switch (type) {
             case "image/png" -> ".png";
@@ -122,27 +138,28 @@ public class ResourceService extends ServiceImpl<ResourceMapper, Resource> {
         IPage<Resource> search = resourceMapper.search(new Page<>(pageDTO.getPage(), pageDTO.getSize()), tags);
 
         return search.convert(resource -> {
-                    ResourceItemVO resourceVO = new ResourceItemVO();
+            ResourceItemVO resourceVO = new ResourceItemVO();
 
-                    resourceVO.setId(resource.getId());
+            resourceVO.setId(resource.getId());
 
-                    resourceVO.setType(resource.getType());
-                    resourceVO.setCoverCount(coverMapper.selectCount(new LambdaQueryWrapper<Cover>()
-                            .eq(Cover::getResourceId, resource.getId())));
+            resourceVO.setType(resource.getType());
+            resourceVO.setCover(resource.getCover() != null && resource.getCover().length != 8);
+            resourceVO.setCoverCount(coverMapper.selectCount(new LambdaQueryWrapper<Cover>()
+                    .eq(Cover::getResourceId, resource.getId())));
 
-                    if (StringUtils.isNotBlank(password)) {
-                        try {
-                            String name = resource.getName().substring(0, resource.getName().lastIndexOf('.'));
-                            resourceVO.setName(AESUtils.decrypt(name, password));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        resourceVO.setName(resource.getName());
-                    }
+            if (StringUtils.isNotBlank(password)) {
+                try {
+                    String name = resource.getName().substring(0, resource.getName().lastIndexOf('.'));
+                    resourceVO.setName(AESUtils.decrypt(name, password));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                resourceVO.setName(resource.getName());
+            }
 
-                    return resourceVO;
-                });
+            return resourceVO;
+        });
     }
 
     public ResourceVO get(Long id) {
@@ -156,6 +173,10 @@ public class ResourceService extends ServiceImpl<ResourceMapper, Resource> {
 
         resourceVO.setId(resource.getId());
         resourceVO.setType(resource.getType());
+        resourceVO.setCover(resource.getCover() != null && resource.getCover().length != 8);
+
+        resourceVO.setCoverCount(coverMapper.selectCount(new LambdaQueryWrapper<Cover>()
+                .eq(Cover::getResourceId, resource.getId())));
 
         if (StringUtils.isNotBlank(password)) {
             try {
@@ -253,6 +274,17 @@ public class ResourceService extends ServiceImpl<ResourceMapper, Resource> {
             file = new File(appProperties.getRepository() + "/" + result);
         } while (file.exists());
         return file;
+    }
+
+    public void delCover(Long id) {
+        if (resourceMapper.exists(new LambdaUpdateWrapper<Resource>()
+                .eq(Resource::getId, id))) {
+            throw new ServiceException(HttpStatus.NOT_FOUND);
+        }
+
+        resourceMapper.update(null, new LambdaUpdateWrapper<Resource>()
+                .eq(Resource::getId, id)
+                .set(Resource::getCover, null));
     }
 
 }

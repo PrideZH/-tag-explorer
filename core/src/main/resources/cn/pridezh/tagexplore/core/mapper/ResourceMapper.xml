@@ -5,7 +5,13 @@
 
 <mapper namespace="cn.pridezh.tagexplore.core.mapper.ResourceMapper">
 
-    <select id="search" resultType="cn.pridezh.tagexplore.core.domain.po.Resource">
+    <resultMap id="ResourceMap" type="cn.pridezh.tagexplore.core.domain.po.Resource" >
+        <id column="id" property="id"/>
+        <id column="type" property="type"/>
+        <result column="cover" property="cover" typeHandler="org.apache.ibatis.type.ByteArrayTypeHandler"/>
+    </resultMap>
+
+    <select id="search" resultMap="ResourceMap">
         SELECT * FROM resource
         <if test="tags != null and !tags.isEmpty()">
             WHERE (

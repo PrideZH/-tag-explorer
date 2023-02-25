@@ -1,6 +1,7 @@
 package cn.pridezh.tagexplore.core.service;
 
 import cn.pridezh.tagexplore.core.domain.po.Cover;
+import cn.pridezh.tagexplore.core.mapper.ResourceMapper;
 import cn.pridezh.tagexplore.core.util.XORUtils;
 import cn.pridezh.tagexplore.core.config.properties.AppProperties;
 import cn.pridezh.tagexplore.core.mapper.CoverMapper;
@@ -94,7 +95,7 @@ public class CoverService {
             for (int i = step / 2; i < ftp; i += step) {
                 grabber.setFrameNumber(i);
                 // 获取无效帧时 继续获取临近帧
-                for (int j = 0; j < step / 4; j++) {
+                for (int j = 0; j < 64 && j < step; j++) {
                     if (insertFrame(grabber.grabFrame(), resourceId)) {
                         break;
                     }
