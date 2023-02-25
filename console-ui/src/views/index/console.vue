@@ -37,10 +37,9 @@ const changeNameHandle = (event: Event) => {
     
     if (resource.value.name == inputEl.value) return;
     
+    emits('update', props.id, inputEl.value);
     resourceApi.put(props.id, {
         name: inputEl.value
-    }).then(res => {
-        emits('update', inputEl.value);
     })
 }
 

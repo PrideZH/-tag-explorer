@@ -26,6 +26,15 @@ const deleteResourceHandle = (id: string) => {
     active.value = resources.value.records[Math.min(index, resources.value.records.length - 1)];
   }
 }
+const updateResourceHandle = (id: string, name: string) => {
+  if (resources.value == undefined) return;
+  let index = 0;
+  for (; index < resources.value.records.length; index++) {
+    if (resources.value.records[index].id == id) break;
+  }
+  if (index == resources.value.records.length) return;
+  resources.value.records[index].name = name;
+}
 
 // 控制台显示资源
 const active = ref<ResourceItem>()
@@ -160,11 +169,7 @@ function uploadFiles (files: File[]) {
         </span>
       </div>
     </div>
-    <Console class="console" :id="active?.id" @delete="deleteResourceHandle"
-    @update="(name: string) => {
-      if (active == undefined) return;
-      active.name = name;
-    }"></Console>
+    <Console class="console" :id="active?.id" @delete="deleteResourceHandle" @update="updateResourceHandle"></Console>
   </div>
 </template>
 
