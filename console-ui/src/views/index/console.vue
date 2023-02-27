@@ -39,10 +39,12 @@ const changeNameHandle = (event: Event) => {
     const inputEl: HTMLInputElement = <HTMLInputElement> event.target;
     
     if (resource.value.name == inputEl.value) return;
+    const name: string = inputEl.value.trim();
     
     emits('update', props.id, inputEl.value);
+    resource.value.name = name
     resourceApi.put(props.id, {
-        name: inputEl.value
+        name: name
     })
 }
 
@@ -70,10 +72,20 @@ const addTagHandle = (event: Event) => {
         isInputTag.value = false;
         return;
     }
+    let tag: string = inputEl.value.trim()
+    tag = tag.toLowerCase();
+
+    if (resource.value) {
+        for (let i = 0; i < resource.value.tags.length; i++) {
+            if (tag == resource.value.tags[i].name) {
+                return;
+            }
+        }
+    }
 
     tagApi.add({
         resourceId: props.id,
-        name: inputEl.value
+        name: tag
     }).then(res => {
         if (props.id) requestResource(props.id)
         inputEl.value = ''

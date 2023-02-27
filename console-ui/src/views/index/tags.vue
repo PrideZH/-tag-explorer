@@ -8,12 +8,12 @@ const tags = ref<Tag[]>([]);
 const actives = ref<Tag[]>([]);
 
 const activeHandle = (tag: Tag) => {
-    if (actives.value.includes(tag)) {
-        actives.value.splice(actives.value.indexOf(tag), 1);
-    } else {
-        actives.value.push(tag);
-    }
-    emits('search', actives.value.map(tag => tag.id))
+  if (actives.value.includes(tag)) {
+      actives.value.splice(actives.value.indexOf(tag), 1);
+  } else {
+      actives.value.push(tag);
+  }
+  emits('search', actives.value.map(tag => tag.id))
 }
 
 onMounted(() => {

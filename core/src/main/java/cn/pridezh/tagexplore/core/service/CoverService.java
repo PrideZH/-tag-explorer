@@ -89,6 +89,7 @@ public class CoverService {
             grabber.start();
 
             // 截取等分8张图片
+            log.info("获取视频封面...");
             int COUNT = 8;
             long ftp = grabber.getLengthInFrames();
             int step = (int)(ftp / COUNT);
@@ -99,9 +100,9 @@ public class CoverService {
                     if (insertFrame(grabber.grabFrame(), resourceId)) {
                         break;
                     }
-                    log.info("Retry: {}", j);
                 }
             }
+            log.info("获取视频封面完成");
 
             grabber.stop();
             grabber.close();

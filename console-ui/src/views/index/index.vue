@@ -119,12 +119,12 @@ function changePage (page: number) {
 function uploadFiles (files: File[]) {
   const formdata = new FormData();
   files.forEach((file: File) => {
-      workQueue.value.push({
-          name: file.name,
-          status: WorkStatus.WAITING,
-          progress: 0
-      })
-      formdata.append('files', file);
+    workQueue.value.push({
+      name: file.name,
+      status: WorkStatus.WAITING,
+      progress: 0
+    })
+    formdata.append('files', file);
   })
   axios.post<ResourceItem[]>('/resource', formdata, {
     headers: { 'Content-Type': 'multipart/form-data' },
@@ -134,10 +134,12 @@ function uploadFiles (files: File[]) {
       })
     }
   }).then(res => {
-      workQueue.value.splice(0, workQueue.value.length);
-      if (resources.value == undefined) return;
-      res.data.forEach(item => resources.value?.records.unshift(item));
-      resources.value.total += res.data.length;
+    workQueue.value.splice(0, workQueue.value.length);
+    if (resources.value == undefined) return;
+    res.data.forEach(item => resources.value?.records.unshift(item));
+    resources.value.total += res.data.length;
+  }).catch(err => {
+    console.error(err)
   })
 }
 </script>
@@ -146,6 +148,7 @@ function uploadFiles (files: File[]) {
   <div class="index-container">
     <Tags class="tags" @search="data => {
       tags = data;
+      current = 1;
       requestResource();
     }"></Tags>
     <div class="main">
@@ -183,7 +186,7 @@ function uploadFiles (files: File[]) {
         <span class="item item-disable" v-show="current < (resources?.pages || 1) - 3">
           <i class='bx bx-dots-horizontal-rounded' ></i>
         </span>
-        <span :class="['item', {'item-active': resources?.pages == current}]" @click="changePage(resources?.pages || 1)">{{ resources?.pages }}</span>
+        <span v-show="resources?.pages != 1" :class="['item', {'item-active': resources?.pages == current}]" @click="changePage(resources?.pages || 1)">{{ resources?.pages }}</span>
         <span class="item">
           <i class='bx bx-chevron-right' ></i>
         </span>
