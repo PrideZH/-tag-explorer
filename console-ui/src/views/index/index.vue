@@ -118,7 +118,14 @@ function changePage (page: number) {
 
 function uploadFiles (files: File[]) {
   const formdata = new FormData();
+
+  workQueue.value.splice(0, workQueue.value.length);
+
   files.forEach((file: File) => {
+    if (file.name.length >= 128) {
+      console.error('文件名过长');
+      return;
+    }
     workQueue.value.push({
       name: file.name,
       status: WorkStatus.WAITING,
@@ -126,11 +133,17 @@ function uploadFiles (files: File[]) {
     })
     formdata.append('files', file);
   })
+
+  if (workQueue.value.length == 0) {
+    return;
+  }
+
   axios.post<ResourceItem[]>('/resource', formdata, {
+    timeout: 60 * 60 * 1000,
     headers: { 'Content-Type': 'multipart/form-data' },
     onUploadProgress: function (event: AxiosProgressEvent) {
       workQueue.value.forEach(work => {
-          work.progress = event.progress || 0;
+        work.progress = event.progress || 0;
       })
     }
   }).then(res => {

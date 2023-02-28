@@ -48,6 +48,24 @@ const changeNameHandle = (event: Event) => {
     })
 }
 
+const changeRemarkHandle = (event: Event) => {
+    if (props.id == undefined) {
+        console.error('Resource is loss');
+        return;
+    }
+
+    if (event.target == null || resource.value == undefined) return;
+    const inputEl: HTMLInputElement = <HTMLInputElement> event.target;
+    
+    if (resource.value.remark == inputEl.value) return;
+    const remark: string = inputEl.value.trim();
+    
+    resource.value.remark = remark
+    resourceApi.put(props.id, {
+        remark: remark
+    })
+}
+
 const deleteHandle = () => {
     if (confirm('Do you really want to delete the resource?')) {
         if (props.id == undefined) {
@@ -148,7 +166,7 @@ function insertCover (file: File) {
     <div>Name</div>
     <input class="input" type="text" :value="resource?.name || '-'" @blur="changeNameHandle" />
     <div>Remark</div>
-    <input class="input" type="text" placeholder="Input a remark" />
+    <input class="input" type="text" :value="resource?.remark" placeholder="Input a remark" @blur="changeRemarkHandle" />
     <div>Tags</div>
     <div class="tags">
         <span class="tag" v-for="tag in resource?.tags" :key="tag.id">

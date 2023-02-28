@@ -15,6 +15,8 @@ public class ResourceVO extends BaseVO {
 
     private String name;
 
+    private String remark;
+
     private String type;
 
     private List<TagVO> tags;

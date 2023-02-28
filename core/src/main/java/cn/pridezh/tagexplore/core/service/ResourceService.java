@@ -162,7 +162,7 @@ public class ResourceService extends ServiceImpl<ResourceMapper, Resource> {
         });
     }
 
-    public ResourceVO get(Long id) {
+    public ResourceVO get(Long id) throws Exception {
         Resource resource = Optional
                 .ofNullable(resourceMapper.selectById(id))
                 .orElseThrow(() -> new ServiceException(HttpStatus.NOT_FOUND));
@@ -172,6 +172,7 @@ public class ResourceService extends ServiceImpl<ResourceMapper, Resource> {
         ResourceVO resourceVO = new ResourceVO();
 
         resourceVO.setId(resource.getId());
+
         resourceVO.setType(resource.getType());
         resourceVO.setCover(resource.getCover() != null && resource.getCover().length != 8);
 
@@ -179,14 +180,16 @@ public class ResourceService extends ServiceImpl<ResourceMapper, Resource> {
                 .eq(Cover::getResourceId, resource.getId())));
 
         if (StringUtils.isNotBlank(password)) {
-            try {
-                String name = resource.getName().substring(0, resource.getName().lastIndexOf('.'));
-                resourceVO.setName(AESUtils.decrypt(name, password));
-            } catch (Exception e) {
-                e.printStackTrace();
+            String name = resource.getName().substring(0, resource.getName().lastIndexOf('.'));
+            resourceVO.setName(AESUtils.decrypt(name, password));
+            if (StringUtils.isNotBlank(resource.getRemark())) {
+                resourceVO.setRemark(AESUtils.decrypt(resource.getRemark(), password));
+            } else {
+                resourceVO.setRemark("");
             }
         } else {
             resourceVO.setName(resource.getName());
+            resourceVO.setRemark(resource.getRemark());
         }
 
         List<Long> tagIds = resourceTagMapper.selectList(new LambdaQueryWrapper<ResourceTag>()
@@ -210,6 +213,8 @@ public class ResourceService extends ServiceImpl<ResourceMapper, Resource> {
                 .ofNullable(resourceMapper.selectById(resourceUpdateDTO.getId()))
                 .orElseThrow(() -> new ServiceException(HttpStatus.NOT_FOUND));
 
+        String password = appProperties.getAuth().getPassword();
+
         Resource newResource = new Resource();
 
         if (StringUtils.isNotBlank(resourceUpdateDTO.getName())) {
@@ -219,6 +224,14 @@ public class ResourceService extends ServiceImpl<ResourceMapper, Resource> {
             File file = new File(appProperties.getRepository() + "/" + resource.getName());
             if(!file.renameTo(newFile)) {
                 throw new ServiceException(1001, "文件名称修改失败");
+            }
+        }
+
+        if (StringUtils.isNotBlank(resourceUpdateDTO.getRemark())) {
+            if (StringUtils.isNotBlank(password)) {
+                newResource.setRemark(AESUtils.encrypt(resourceUpdateDTO.getRemark(), password));
+            } else {
+                newResource.setRemark(resourceUpdateDTO.getRemark());
             }
         }
 

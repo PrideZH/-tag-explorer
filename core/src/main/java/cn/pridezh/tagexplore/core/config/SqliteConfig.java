@@ -60,6 +60,7 @@ public class SqliteConfig {
                         CREATE TABLE [resource] (
                           [id] INT PRIMARY KEY NOT NULL,
                           [name] VARCHAR(255) NOT NULL,
+                          [remark] VARCHAR(255) NOT NULL DEFAULT '',
                           [type] VARCHAR(32) NOT NULL DEFAULT '',
                           [cover] BLOB
                         );

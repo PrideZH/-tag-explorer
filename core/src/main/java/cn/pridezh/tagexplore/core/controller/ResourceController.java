@@ -56,7 +56,7 @@ public class ResourceController {
     }
 
     @GetMapping("/{id:\\d+}")
-    public Result<ResourceVO> get(@PathVariable("id") String id) {
+    public Result<ResourceVO> get(@PathVariable("id") String id) throws Exception {
         return Result.success(resourceService.get(Long.valueOf(id)));
     }
 

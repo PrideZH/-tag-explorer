@@ -10,6 +10,7 @@ export interface ResourceItem extends BaseResp {
 
 export interface Resource extends BaseResp {
     name: string;
+    remark: string;
     type: string;
     cover: boolean;
     tags: {
@@ -31,7 +32,7 @@ const resourceApi = {
     
     put (id: string, data: {
         name?: string;
-        tags?: string[];
+        remark?: string;
     }) {
         return axios.put(`/resource/${id}`, data)
     },

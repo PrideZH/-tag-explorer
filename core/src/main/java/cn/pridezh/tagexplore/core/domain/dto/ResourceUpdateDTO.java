@@ -3,8 +3,6 @@ package cn.pridezh.tagexplore.core.domain.dto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
-import java.util.List;
-
 /**
  * @author PrideZH
  */
@@ -16,6 +14,6 @@ public class ResourceUpdateDTO {
 
     private String name;
 
-    private List<String> tags;
+    private String remark;
 
 }
