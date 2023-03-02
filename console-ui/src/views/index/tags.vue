@@ -5,28 +5,37 @@ import tagApi, { Tag } from '../../api/tag';
 const emits = defineEmits([ 'search' ])
 
 const tags = ref<Tag[]>([]);
-const actives = ref<Tag[]>([]);
+const actives = ref<string[]>([]);
 
-const activeHandle = (tag: Tag) => {
-  if (actives.value.includes(tag)) {
-      actives.value.splice(actives.value.indexOf(tag), 1);
-  } else {
-      actives.value.push(tag);
+const activeHandle = (id: string) => {
+  let i = 0;
+  for (; i < tags.value.length; i++) {
+    if (actives.value[i] == id) {
+      break;
+    }
   }
-  emits('search', actives.value.map(tag => tag.id))
+  if (i == tags.value.length) {
+    actives.value.push(id);
+  } else {
+    actives.value.splice(i, 1);
+  }
+  listRequest()
+  emits('search', actives.value)
 }
 
-onMounted(() => {
-  tagApi.list().then(res => {
+onMounted(() => listRequest())
+
+function listRequest () {
+  tagApi.list(actives.value).then(res => {
     tags.value = res.data;
   })
-})
+}
 </script>
 
 <template>
   <div id="tags-container">
-    <span :class="[ 'tag', { 'tag-active': actives.includes(tag) } ]" v-for="tag in tags" :key="tag.id"
-        @click="activeHandle(tag)">
+    <span :class="[ 'tag', { 'tag-active': actives.includes(tag.id) } ]" v-for="tag in tags" :key="tag.id"
+        @click="activeHandle(tag.id)">
         {{ tag.name }} [{{ tag.count }}]
     </span>
   </div>

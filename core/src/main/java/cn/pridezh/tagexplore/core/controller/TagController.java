@@ -27,8 +27,8 @@ public class TagController {
     }
 
     @GetMapping("")
-    public Result<List<TagVO>> list() {
-        return Result.success(tagService.list());
+    public Result<List<TagVO>> list(@RequestParam(required = false) List<String> tags) {
+        return Result.success(tagService.list(tags));
     }
 
     @DeleteMapping("/{resourceId:\\d+}/{tagId:\\d+}")

@@ -119,7 +119,7 @@ function changePage (page: number) {
 function uploadFiles (files: File[]) {
   const formdata = new FormData();
 
-  workQueue.value.splice(0, workQueue.value.length);
+  workQueue.value = workQueue.value.filter((work: Work) => work.status == WorkStatus.SUCCESS)
 
   files.forEach((file: File) => {
     if (file.name.length >= 128) {

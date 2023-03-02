@@ -8,8 +8,8 @@ export interface Tag extends BaseResp {
 
 const tagApi = {
 
-    list () {
-        return axios.get<Tag[]>('/tags');
+    list (tags?: string[]) {
+        return axios.get<Tag[]>('/tags', { params: { tags } });
     },
 
     add (data: {

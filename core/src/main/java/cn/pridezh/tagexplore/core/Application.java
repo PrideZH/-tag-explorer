@@ -1,10 +1,6 @@
 package cn.pridezh.tagexplore.core;
 
-import cn.pridezh.tagexplore.core.domain.po.Resource;
-import cn.pridezh.tagexplore.core.mapper.ResourceMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.bytedeco.javacv.FFmpegLogCallback;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -21,9 +17,6 @@ public class Application {
 
     public static void main(String[] args) {
         ConfigurableApplicationContext applicationContext = SpringApplication.run(Application.class, args);
-
-        // 打开 javacv 详细日志
-        FFmpegLogCallback.set();
 
         Environment env = applicationContext.getEnvironment();
         String port = env.getProperty("server.port");

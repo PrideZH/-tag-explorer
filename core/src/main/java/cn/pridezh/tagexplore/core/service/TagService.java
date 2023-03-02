@@ -7,6 +7,7 @@ import cn.pridezh.tagexplore.core.domain.vo.TagVO;
 import cn.pridezh.tagexplore.core.mapper.ResourceTagMapper;
 import cn.pridezh.tagexplore.core.mapper.TagMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,10 +41,27 @@ public class TagService {
         resourceTagMapper.insert(resourceTag);
     }
 
-    public List<TagVO> list() {
-        List<Tag> tags = tagMapper.selectList(null);
+    public List<TagVO> list(List<String> tagIds) {
+        List<Tag> result;
 
-        return tags.stream().map(tag -> {
+        if (tagIds == null || tagIds.size() == 0) {
+            result = tagMapper.selectList(null);
+        } else {
+            // 获取可查询到的所有资源的ID
+            List<Long> resourceIds = resourceTagMapper.selectList(new QueryWrapper<ResourceTag>()
+                            .select("DISTINCT resource_id")
+                            .lambda()
+                            .in(ResourceTag::getTagId, tagIds))
+                    .stream().map(ResourceTag::getResourceId).toList();
+            // 获取这些资源的所有标签
+            List<Long> resTagIds = resourceTagMapper.selectList(new LambdaQueryWrapper<ResourceTag>()
+                            .select(ResourceTag::getTagId)
+                            .in(ResourceTag::getResourceId, resourceIds))
+                    .stream().map(ResourceTag::getTagId).toList();
+            result = tagMapper.selectList(new LambdaQueryWrapper<Tag>().in(Tag::getId, resTagIds));
+        }
+
+        return result.stream().map(tag -> {
             TagVO tagVO = new TagVO();
 
             tagVO.setId(tag.getId());
