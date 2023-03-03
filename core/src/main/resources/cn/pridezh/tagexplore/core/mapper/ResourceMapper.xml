@@ -25,4 +25,18 @@
         </if>
     </select>
 
+    <select id="searchForIds" resultType="_long">
+        SELECT resource.id FROM resource
+        <if test="tags != null and !tags.isEmpty()">
+            WHERE (
+            SELECT count(*) FROM resource__tag
+            WHERE resource__tag.resource_id=resource.id
+            AND resource__tag.tag_id in
+            <foreach collection="tags" item="tag" open="(" close=")" separator=",">
+                #{tag}
+            </foreach>
+            )=${tags.size()}
+        </if>
+    </select>
+
 </mapper>

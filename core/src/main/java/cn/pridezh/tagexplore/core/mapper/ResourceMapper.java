@@ -16,4 +16,6 @@ public interface ResourceMapper extends BaseMapper<Resource> {
 
     IPage<Resource> search(IPage<?> page, @Param("tags") List<Long> tags);
 
+    List<Long> searchForIds(@Param("tags") List<Long> tags);
+
 }

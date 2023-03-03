@@ -4,6 +4,7 @@ import cn.pridezh.tagexplore.core.domain.dto.TagCreateDTO;
 import cn.pridezh.tagexplore.core.domain.po.ResourceTag;
 import cn.pridezh.tagexplore.core.domain.po.Tag;
 import cn.pridezh.tagexplore.core.domain.vo.TagVO;
+import cn.pridezh.tagexplore.core.mapper.ResourceMapper;
 import cn.pridezh.tagexplore.core.mapper.ResourceTagMapper;
 import cn.pridezh.tagexplore.core.mapper.TagMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -23,6 +24,7 @@ public class TagService {
 
     private final TagMapper tagMapper;
     private final ResourceTagMapper resourceTagMapper;
+    private final ResourceMapper resourceMapper;
 
     @Transactional(rollbackFor = Exception.class)
     public void add(TagCreateDTO tagCreateDTO) {
@@ -43,19 +45,15 @@ public class TagService {
 
     public List<TagVO> list(List<String> tagIds) {
         List<Tag> result;
-
         if (tagIds == null || tagIds.size() == 0) {
             result = tagMapper.selectList(null);
         } else {
             // 获取可查询到的所有资源的ID
-            List<Long> resourceIds = resourceTagMapper.selectList(new QueryWrapper<ResourceTag>()
-                            .select("DISTINCT resource_id")
-                            .lambda()
-                            .in(ResourceTag::getTagId, tagIds))
-                    .stream().map(ResourceTag::getResourceId).toList();
+            List<Long> resourceIds = resourceMapper.searchForIds(tagIds.stream().map(Long::valueOf).toList());
             // 获取这些资源的所有标签
-            List<Long> resTagIds = resourceTagMapper.selectList(new LambdaQueryWrapper<ResourceTag>()
-                            .select(ResourceTag::getTagId)
+            List<Long> resTagIds = resourceTagMapper.selectList(new QueryWrapper<ResourceTag>()
+                            .select("DISTINCT tag_id")
+                            .lambda()
                             .in(ResourceTag::getResourceId, resourceIds))
                     .stream().map(ResourceTag::getTagId).toList();
             result = tagMapper.selectList(new LambdaQueryWrapper<Tag>().in(Tag::getId, resTagIds));
