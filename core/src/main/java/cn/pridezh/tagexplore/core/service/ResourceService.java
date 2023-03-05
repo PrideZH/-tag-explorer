@@ -52,18 +52,18 @@ public class ResourceService extends ServiceImpl<ResourceMapper, Resource> {
 
     private final AppProperties appProperties;
 
-    public List<ResourceItemVO> post(MultipartFile[] files) throws Exception {
+    public List<ResourceItemVO> post(MultipartFile[] files, List<Long> tagIds) throws Exception {
         if (files == null || files.length == 0) {
             throw new ServiceException(HttpStatus.BAD_REQUEST);
         }
         List<ResourceItemVO> result = new ArrayList<>();
         for (MultipartFile file : files) {
-            result.add(post0(file));
+            result.add(post0(file, tagIds));
         }
         return result;
     }
 
-    private ResourceItemVO post0(MultipartFile file) throws Exception {
+    private ResourceItemVO post0(MultipartFile file, List<Long> tagIds) throws Exception {
         String password = appProperties.getAuth().getPassword();
 
         if (file.getOriginalFilename() == null) {
@@ -86,6 +86,13 @@ public class ResourceService extends ServiceImpl<ResourceMapper, Resource> {
         resource.setName(f.getName());
         resource.setType(file.getContentType());
         resourceMapper.insert(resource);
+
+        for (Long tagId : tagIds) {
+            ResourceTag resourceTag = new ResourceTag();
+            resourceTag.setResourceId(resource.getId());
+            resourceTag.setTagId(tagId);
+            resourceTagMapper.insert(resourceTag);
+        }
 
         coverService.post(file, resource.getId());
 

@@ -17,12 +17,13 @@
             WHERE (
                 SELECT count(*) FROM resource__tag
                 WHERE resource__tag.resource_id=resource.id
-                AND resource__tag.tag_id in
-                <foreach collection="tags" item="tag" open="(" close=")" separator=",">
-                    #{tag}
-                </foreach>
+                    AND resource__tag.tag_id in
+                    <foreach collection="tags" item="tag" open="(" close=")" separator=",">
+                        #{tag}
+                    </foreach>
             )=${tags.size()}
         </if>
+        ORDER BY name
     </select>
 
     <select id="searchForIds" resultType="_long">

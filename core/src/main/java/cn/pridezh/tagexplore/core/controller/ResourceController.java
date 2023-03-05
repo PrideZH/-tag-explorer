@@ -15,6 +15,7 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -38,8 +41,13 @@ public class ResourceController {
     private final AppProperties appProperties;
 
     @PostMapping("")
-    public Result<List<ResourceItemVO>> post(MultipartFile[] files) throws Exception {
-        return Result.success(resourceService.post(files));
+    public Result<List<ResourceItemVO>> post(MultipartFile[] files, HttpServletRequest request)
+            throws Exception {
+        JSONParser jsonParser = new JSONParser(request.getParameter("tags"));
+
+        List<Long> tagIds = jsonParser.parseArray().stream()
+                .map(tagId -> Long.parseLong(tagId.toString())).toList();
+        return Result.success(resourceService.post(files, tagIds));
     }
 
     @PostMapping("/cover")

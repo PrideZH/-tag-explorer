@@ -135,7 +135,8 @@ function uploadFiles (files: File[]) {
     })
 
     const formdata = new FormData();
-    formdata.append('files', file);
+    formdata.append('files', file)
+    formdata.append('tags', JSON.stringify(tags.value))
 
     axios.post<ResourceItem[]>('/resource', formdata, {
       timeout: 60 * 60 * 1000,
