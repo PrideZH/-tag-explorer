@@ -126,13 +126,13 @@ function uploadFiles (files: File[]) {
       return;
     }
 
-    const id: string = crypto.randomUUID();
-    workQueue.value.push({
-      id,
+    const work: Work = {
+      id: crypto.randomUUID(),
       name: file.name,
       status: WorkStatus.WAITING,
       progress: 0
-    })
+    }
+    workQueue.value.push(work)
 
     const formdata = new FormData();
     formdata.append('files', file)
@@ -142,9 +142,7 @@ function uploadFiles (files: File[]) {
       timeout: 60 * 60 * 1000,
       headers: { 'Content-Type': 'multipart/form-data' },
       onUploadProgress: function (event: AxiosProgressEvent) {
-        workQueue.value.forEach(work => {
-          work.progress = event.progress || 0;
-        })
+        work.progress = event.progress || 0;
       }
     }).then(res => {
       if (resources.value == undefined) return;
@@ -153,12 +151,7 @@ function uploadFiles (files: File[]) {
     }).catch(err => {
       console.error(err)
     }).finally(() => {
-      for (let i = 0; i < workQueue.value.length; i++) {
-        if (workQueue.value[i].id == id) {
-          workQueue.value.splice(i, 1)
-          return
-        }
-      }
+      workQueue.value.splice(workQueue.value.indexOf(work), 1)
     })
   })
 }
